@@ -7,6 +7,7 @@ var playerSym = 1;
 let radio;
 let board = [];
 let alternate = false;
+let oai = false;
 let xsel, osel, symsel;
 
 // 0: empty  1: x  2: o
@@ -22,23 +23,37 @@ function setup(){
 	textAlign(CENTER);
 	noLoop();
 	tileSize = wh/n;
-	for(var i = 0; i <n; i++){
-		let a = [];
-		for(var j = 0; j < n; j++){
-			a.push({state: 0});
-		}
-		board.push(a);
-	}
 	stroke(0);
 	strokeWeight(2);
-	for(var i = 0; i < n; i++){
-		for(var j = 0; j < n; j++){
-			rect(i*tileSize, j*tileSize, tileSize, tileSize);
-		}
+	// for(var i = 0; i <n; i++){
+	// 	let a = [];
+	// 	for(var j = 0; j < n; j++){
+	// 		a.push({state: 0});
+	// 	}
+	// 	board.push(a);
+	// }
+
+	// for(var i = 0; i < n; i++){
+	// 	for(var j = 0; j < n; j++){
+	// 		rect(i*tileSize, j*tileSize, tileSize, tileSize);
+	// 	}
+	// }
+
+	for(var i = 0; i <n*n; i++){
+		board.push({state:0});
+	}
+
+	for(var i = 0; i < n*n; i++){
+		let x = i%n; 
+		let y = Math.floor(i/n);
+		rect(x*tileSize, y*tileSize, tileSize, tileSize);
 	}
 	symsel = document.querySelector('#symbolselect');
 	symsel.onchange = (event)=>{
 		playerSym = +event.srcElement.value;
+		if(playerSym == 2 && oai){
+			compMove();
+		}
 	};
 	let a = document.querySelector('#alternate');
 	a.onclick = (event)=>{
@@ -48,13 +63,28 @@ function setup(){
 	osel = document.querySelector('#oselect');
 	let b = document.querySelector('#clear');
 	b.onclick = ()=>{
-		for(var i = 0; i < n; i++){
-			for(var j = 0; j < n; j++){
-				board[i][j].state = 0;
-			}
+		// for(var i = 0; i < n; i++){
+		// 	for(var j = 0; j < n; j++){
+		// 		board[i][j].state = 0;
+		// 	}
+		// }
+		for(var i = 0; i < n*n; i++){
+				board[i].state = 0;
 		}
 		display();
 	};
+	let ai = document.querySelector('#oai');
+	ai.onclick = ()=>{
+		oai = !oai;
+	};
+}
+
+function compMove(){
+	console.log('hi');
+}
+
+function toIndex(x, y){
+	return y*n+x;
 }
 
 
@@ -73,39 +103,69 @@ function printTile(x, y, state){
 function display(){
 	for(var i = 0; i <n; i++){
 		for(var j = 0; j <n; j++){
-				printTile(i, j, board[i][j].state);
+				//printTile(i, j, board[i][j].state);
+			printTile(i, j, board[toIndex(i,j)].state);
 			}
 		}
+}
+
+function tileCoords(x, y){
+	let i = Math.floor(x/tileSize);
+	let j = Math.floor(y/tileSize);
+	if(i >= 0 && j >= 0 && i < n && j < n)
+		return {x: i, y: j};
+	else return null;		
 }
 
 function mouseTile(x, y){
 	let i = Math.floor(x/tileSize);
 	let j = Math.floor(y/tileSize);
 	if(i >= 0 && j >= 0 && i < n && j < n)
-		return board[i][j];
+		return board[toIndex(i,j)];
+		// return board[i][j];
 	else return null;
 }
 
+function printValue(x, y, player){
+	let v = evaluateBoard(board, player);
+	console.log(v);
+}
+
+function keyPressed(event){
+	if(event.key == "x"){
+		console.log(value(board, 1));
+	}else if(event.key == "o"){
+		console.log(value(board, 2));
+	}
+}
+
 function mousePressed(){
-	let t = mouseTile(mouseX, mouseY);
+	let t = tileCoords(mouseX, mouseY);
+	// let t = mouseTile(mouseX, mouseY);
 	if(t){
-		switch(t.state){
+		let p = board[toIndex(t.x, t.y)];
+		//printValue(t.x, t.y, playerSym);
+		
+		switch(p.state){
 			case 0:
-			t.state = playerSym;
+			p.state = playerSym;
 			break;
 			case 1:
-			if(playerSym == 1){t.state = 0;}
+			if(playerSym == 1){p.state = 0;}
 			break;
 			case 2:
-			if(playerSym == 2){t.state = 0;}
+			if(playerSym == 2){p.state = 0;}
 		}
 		if(alternate){
-			if(xsel.checked){osel.checked = true; playerSym = 2;}
-			else{xsel.checked = true; playerSym = 1;}
+			if(xsel.checked){
+				osel.checked = true; playerSym = 2; 
+				if(oai){ compMove(); xsel.checked = true; playerSym = 1;}
+			}
+			else if(osel.checked){xsel.checked = true; playerSym = 1;}
 			
-		}
+		} //console.log(getNeighbors(board, t.x, t.y, playerSym));
+		console.log(isTerminal(board, 1));
 		display();
 	}
 	
 }
-
