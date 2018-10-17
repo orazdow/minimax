@@ -25,29 +25,17 @@ function setup(){
 	tileSize = wh/n;
 	stroke(0);
 	strokeWeight(2);
-	// for(var i = 0; i <n; i++){
-	// 	let a = [];
-	// 	for(var j = 0; j < n; j++){
-	// 		a.push({state: 0});
-	// 	}
-	// 	board.push(a);
-	// }
-
-	// for(var i = 0; i < n; i++){
-	// 	for(var j = 0; j < n; j++){
-	// 		rect(i*tileSize, j*tileSize, tileSize, tileSize);
-	// 	}
-	// }
 
 	for(var i = 0; i <n*n; i++){
 		board.push({state:0});
 	}
 
-	for(var i = 0; i < n*n; i++){
-		let x = i%n; 
-		let y = Math.floor(i/n);
-		rect(x*tileSize, y*tileSize, tileSize, tileSize);
+	for(var i = 0; i < n; i++){
+		for(var j = 0; j < n; j++){
+			rect(i*tileSize, j*tileSize, tileSize, tileSize);
+		}
 	}
+
 	symsel = document.querySelector('#symbolselect');
 	symsel.onchange = (event)=>{
 		playerSym = +event.srcElement.value;
@@ -63,25 +51,23 @@ function setup(){
 	osel = document.querySelector('#oselect');
 	let b = document.querySelector('#clear');
 	b.onclick = ()=>{
-		// for(var i = 0; i < n; i++){
-		// 	for(var j = 0; j < n; j++){
-		// 		board[i][j].state = 0;
-		// 	}
-		// }
+
 		for(var i = 0; i < n*n; i++){
 				board[i].state = 0;
 		}
 		display();
 	};
-	let ai = document.querySelector('#oai');
-	ai.onclick = ()=>{
-		oai = !oai;
+
+	let aix = document.querySelector('#aix');
+	let aio = document.querySelector('#aio');
+	aix.onclick = ()=>{
+		choose(2, 1);
+	};
+	aio.onclick = ()=>{
+		choose(2, 2);
 	};
 }
 
-function compMove(){
-	console.log('hi');
-}
 
 function toIndex(x, y){
 	return y*n+x;
@@ -139,6 +125,24 @@ function keyPressed(event){
 	}
 }
 
+function printState(board){	
+	let str = "+---+---+---+\n";
+	for(var j = 0; j < n; j++){
+		str += "|";
+		for(var i = 0; i < n; i++){
+			let s = board[toIndex(i,j)].state;
+			let p = ' ';
+			if(s == 1){
+				p = 'x';
+			}else if(s == 2){ p = 'o'; } 
+			let r = " "+p+" |";
+			str += r;
+		}
+		str += "\n+---+---+---+\n";
+	}
+	console.log(str);
+}
+
 function mousePressed(){
 	let t = tileCoords(mouseX, mouseY);
 	// let t = mouseTile(mouseX, mouseY);
@@ -158,13 +162,12 @@ function mousePressed(){
 		}
 		if(alternate){
 			if(xsel.checked){
-				osel.checked = true; playerSym = 2; 
-				if(oai){ compMove(); xsel.checked = true; playerSym = 1;}
+				osel.checked = true; playerSym = 2; choose(2, 2);
 			}
-			else if(osel.checked){xsel.checked = true; playerSym = 1;}
+			else if(osel.checked){xsel.checked = true; playerSym = 1; choose(2, 1);}
 			
 		} //console.log(getNeighbors(board, t.x, t.y, playerSym));
-		console.log(isTerminal(board, 1));
+		//console.log(isTerminal(board));
 		display();
 	}
 	
