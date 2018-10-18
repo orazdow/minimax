@@ -24,8 +24,6 @@ function evaluateBoard(board, player){
 	let value = 0;
 	for(var j = 0; j <n; j++){
 		for(var i = 0; i < n; i++){
-			//console.log(board[toIndex(i,j)].state);
-			//console.log(i, j, evaluatePos(board, i, j, player));
 			if(board[toIndex(i,j)].state == player){ 
 				value += evaluatePos(board, i, j, player);
 			}
@@ -79,10 +77,10 @@ function isTerminal(board){
 	check3(2,4,6, board));
 	if(!a){
 		let n = 0;
-		for(var i = 0; i < board.length; i++){
+		for(var i = 0; i < board.length; i++)
 			if(board[i].state)
 				n++;
-		} 
+		
 		// draw
 		if(n == board.length){
 			return 1;
@@ -90,48 +88,79 @@ function isTerminal(board){
 	}else return a + 1;
 }
 
+// choose best move
 function choose(depth, player){
+
+	let moves =  evaluateMoves(depth, player);
+	if(!moves.length) return;
+	let index = 0;
+	let val = -9999;
+	let leastdepth = 9999;
+	let str = player == 1 ? "X:\n" : "O:\n";
+
+	// choose highest value with least depth
+	moves.forEach((m, i)=>{
+		if(m.value > val){
+			val = m.value;
+			leastdepth = m.depth;
+			index = i;
+		}else if(m.value == val && m.depth < leastdepth){
+			leastdepth = m.depth;
+			index = i
+		}
+		str += "("+m.x+", "+m.y+"): "+m.value+', '+m.depth+'\n';
+	});
+	str += 'best: ('+moves[index].x+', '+moves[index].y+')\n';
+	readout.innerHTML = str;
+
+	return {x: moves[index].x, y: moves[index].y};
+}
+
+// initiate minimax
+function evaluateMoves(maxdepth, player){
 	let spaces = getfreeSpaces(board);
 	let maxiPlayer = player;
 	let miniPlayer = player == 1 ? 2 : 1;
-	let str = player == 1 ? "X:\n" : "O:\n";
+	let moves = [];
 	spaces.forEach((pos, i)=>{
 		let child = childState(board, pos.x, pos.y, player);
-		let v = minimax(child, depth, true, maxiPlayer, miniPlayer);
-		console.log(pos.x, pos.y, v);
-		str += "("+pos.x+", "+pos.y+"): "+v+'\n';
-		
+		let m = minimax(child, maxdepth, false, maxiPlayer, miniPlayer);
+		moves.push({x: pos.x, y: pos.y, value: m.value, depth: maxdepth-m.depth});
 	});
-	document.getElementById("readout").innerHTML = str;
+	return moves;
 }
 
 function minimax(state, depth, isMaximizing, maxiPlayer, miniPlayer){
 	let t = isTerminal(state); 
-    let rtn = false;
 	if(t){
-		if(t == 1){ // draw
-			return 0;
-		}else return (t-1 == maxiPlayer) ? 99999 : -99999;
-	}else if(depth == 0) return evaluateBoard(state, maxiPlayer);
+		if(t == 1){
+			return {value: 0, depth: depth}; // draw
+		}else{ //printState(state);
+			return {value: t-1 == maxiPlayer ? 99 : -99, depth: depth}; // win/loss
+		}
+	}else if(depth == 0){ 
+		return {value: evaluateBoard(state, maxiPlayer), depth: depth}; // depth limit
+	}
 
-	let spaces = getfreeSpaces(board);
+	let spaces = getfreeSpaces(state);
 	depth--;
-	if(isMaximizing){
+
+	if(isMaximizing){ 
 		let value = -99999;
 		spaces.forEach((pos)=>{
-			let child = childState(state, pos.x, pos.y, miniPlayer);
+			let child = childState(state, pos.x, pos.y, maxiPlayer);
 			let m = minimax(child, depth, false, maxiPlayer, miniPlayer);
-			value = Math.max(value, m);
+			value = Math.max(value, m.value);
 		});
-		return value;
+		return {value: value, depth: depth};
 	}else{
 		let value = 99999;
 		spaces.forEach((pos)=>{
-			let child = childState(state, pos.x, pos.y, maxiPlayer);
+			let child = childState(state, pos.x, pos.y, miniPlayer);
 			let m = minimax(child, depth, true, maxiPlayer, miniPlayer);
-			value = Math.min(value, m); 
+			value = Math.min(value, m.value); 
 		});
-		return value;
+		return {value: value, depth: depth};
 	}
 }
 
@@ -143,48 +172,4 @@ function printChilds(player){
 			printState(child);
 	});
 }
-
-/*
-function checkDuplicates(arr, x, y){
-	for(var i = 0; i < arr.length; i++){
-		if(arr[i].x === x && arr[i].y === y)
-			return true;
-	}
-	return false;
-}
-
-function getNeighbors(board, x, y, player){
-	let neighbors = [];
-	for(var j = -1; j <=1; j++){
-		for(var i = -1; i <=1; i++){
-			let _x = x+i, _y = y+j;
-			if(_x >= 0 && _y >= 0 && _x < n && _y < n && !(_x == x && _y == y))
-				if(board[toIndex(_x,_y)].state == player)
-					if(!checkDuplicates(neighbors, _x, _y))
-						neighbors.push({x:_x, y:_y});
-		}
-	}
-	return neighbors;	
-}
-*/
-
-// function isTerminal(board, x, y, last, lasty, dirx, diry, depth, player){
-
-// }
-
-// function isTerminal(board, depth,  x, y, lastx, lasty, player){
-// 	let rtn = false;
-// 	if(depth == n-1) return true;
-// 	for(var j = -1; j <=1; j++){
-// 		for(var i = -1; i <=1; i++){
-// 			let _x = x+i, _y = y+j;
-// 			if(_x >= 0 && _y >= 0 && _x < n && _y < n && !(_x == x && _y == y))	
-//             	if(board[toIndex(_x,_y)].state == player)
-//             		if(_x != lastx && _y != lasty){ console.log('y');
-//             		 rtn = rtn || isTerminal(board, depth, _x, _y, x, y, player);
-//             		}
-// 		}
-//       }
-//       return rtn;
-// }
 

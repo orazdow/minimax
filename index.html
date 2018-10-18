@@ -4,25 +4,30 @@
 	#ctl *{
 		display: inline-block;
 	}
+		#disp *{
+		display: inline-block;
+	}
 	</style>
 </head>
 <body>
 <script src="p5.min.js"></script>	
 <script src="minimax.js"></script>
 <script src="main.js"></script>	
-<div id="disp"></div>
-<div id="ctl"style="width: 100%; padding: 10px;">
+<div id="disp" style="width: 800px;"></div>
+<div id="ctl"style="width: 100%; padding-left: 10px">
+<div style="background-color: #c6d7ef; padding: 10px;">
 <form id ="symbolselect" >
 <input type="radio" name="playerSym" id="xselect" value="1" checked="true">X
 <input type="radio" name="playerSym" id="oselect" value="2">O
 </form>&nbsp;
 <input type="checkbox" name="alternate" id="alternate">alternate&nbsp;
-<!-- <input type="checkbox" name="oai" id="oai">O ai &nbsp;step:  -->
 <button id="aix">ai X</button>&nbsp;
 <button id="aio">ai O</button>&nbsp;
-<!-- <button id="complete">complete</button>&nbsp;-->
+<input type="checkbox" name="place" id="place">place&nbsp;
+<input type="checkbox" name="o_autoplace" id="oplace">auto O&nbsp;
 <button id="clear">clear</button>&nbsp;
 </div>
-<pre id="readout" style="margin-left: 20px;"></pre>
+</div>
+<!-- <pre id="readout" style="margin-left: 20px;"></pre> -->
 </body>	
 </html>

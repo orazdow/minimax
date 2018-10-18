@@ -8,7 +8,7 @@ let radio;
 let board = [];
 let alternate = false;
 let oai = false;
-let xsel, osel, symsel;
+let xsel, osel, symsel, place, oplace, readout;
 
 // 0: empty  1: x  2: o
 
@@ -39,9 +39,14 @@ function setup(){
 	symsel = document.querySelector('#symbolselect');
 	symsel.onchange = (event)=>{
 		playerSym = +event.srcElement.value;
-		if(playerSym == 2 && oai){
-			compMove();
+		if(oplace && playerSym == 2){
+			let pos = choose(2, 2);
+			if(pos){
+				board[toIndex(pos.x, pos.y)].state = 2;
+				display();
+			}			
 		}
+
 	};
 	let a = document.querySelector('#alternate');
 	a.onclick = (event)=>{
@@ -60,19 +65,41 @@ function setup(){
 
 	let aix = document.querySelector('#aix');
 	let aio = document.querySelector('#aio');
+	let aiplace = document.querySelector('#place');
+	let oauto = document.querySelector('#oplace');
+
 	aix.onclick = ()=>{
-		choose(2, 1);
+		let pos = choose(2, 1);
+		if(place && pos){
+			board[toIndex(pos.x, pos.y)].state = 1;
+			display();
+		}
 	};
 	aio.onclick = ()=>{
-		choose(2, 2);
+		let pos = choose(2, 2);
+		if(place && pos){
+			board[toIndex(pos.x, pos.y)].state = 2;
+			display();
+		}
 	};
-}
+	aiplace.onclick = (event)=>{
+		place = event.srcElement.checked;
+	};
+	oauto.onclick = (event)=>{
+		oplace = event.srcElement.checked;
+	};
 
+	readout = document.createElement('pre');
+	readout.style.paddingLeft = "20px";
+	readout.style.marginBottom = "0px";
+	readout.style.fontSize = "12pt";
+	readout.innerHTML = " ";
+	document.getElementById('disp').appendChild(readout);
+}
 
 function toIndex(x, y){
 	return y*n+x;
 }
-
 
 function printTile(x, y, state){
 	if(state === 0){
@@ -103,14 +130,6 @@ function tileCoords(x, y){
 	else return null;		
 }
 
-function mouseTile(x, y){
-	let i = Math.floor(x/tileSize);
-	let j = Math.floor(y/tileSize);
-	if(i >= 0 && j >= 0 && i < n && j < n)
-		return board[toIndex(i,j)];
-		// return board[i][j];
-	else return null;
-}
 
 function printValue(x, y, player){
 	let v = evaluateBoard(board, player);
@@ -145,10 +164,8 @@ function printState(board){
 
 function mousePressed(){
 	let t = tileCoords(mouseX, mouseY);
-	// let t = mouseTile(mouseX, mouseY);
 	if(t){
 		let p = board[toIndex(t.x, t.y)];
-		//printValue(t.x, t.y, playerSym);
 		
 		switch(p.state){
 			case 0:
@@ -162,13 +179,20 @@ function mousePressed(){
 		}
 		if(alternate){
 			if(xsel.checked){
-				osel.checked = true; playerSym = 2; choose(2, 2);
+				osel.checked = true; playerSym = 2; let pos = choose(2, 2);
+				if(oplace &&pos){ 
+					board[toIndex(pos.x, pos.y)].state = 2;
+					xsel.checked = true; playerSym = 1;
+					del = true;
+				}
+
 			}
-			else if(osel.checked){xsel.checked = true; playerSym = 1; choose(2, 1);}
+			else if(osel.checked){xsel.checked = true; playerSym = 1; choose(2, 2);}
 			
-		} //console.log(getNeighbors(board, t.x, t.y, playerSym));
+		} 
 		//console.log(isTerminal(board));
-		display();
+		//printState(board);
+	    display();
 	}
 	
 }
