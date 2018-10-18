@@ -4,11 +4,10 @@ var tileSize = wh/n;
 var xchar = String.fromCodePoint(0x2715);
 var ochar = String.fromCodePoint(0x25ef);
 var playerSym = 1;
-let radio;
+let depth = 2;
 let board = [];
 let alternate = false;
-let oai = false;
-let xsel, osel, symsel, place, oplace, readout;
+let radio, xsel, osel, symsel, place, oplace, readout;
 
 // 0: empty  1: x  2: o
 
@@ -40,7 +39,7 @@ function setup(){
 	symsel.onchange = (event)=>{
 		playerSym = +event.srcElement.value;
 		if(oplace && playerSym == 2){
-			let pos = choose(2, 2);
+			let pos = choose(depth, 2);
 			if(pos){
 				board[toIndex(pos.x, pos.y)].state = 2;
 				display();
@@ -52,15 +51,21 @@ function setup(){
 	a.onclick = (event)=>{
 		alternate = event.srcElement.checked;
 	};
+	
+	let sd = document.querySelector('#depth');
+	sd.onchange = (event)=>{
+		depth = +event.srcElement.value;
+	}
 	xsel = document.querySelector('#xselect');
 	osel = document.querySelector('#oselect');
 	let b = document.querySelector('#clear');
 	b.onclick = ()=>{
-
 		for(var i = 0; i < n*n; i++){
 				board[i].state = 0;
 		}
 		display();
+		readout.innerHTML = " ";
+		xsel.checked = true; playerSym = 1;
 	};
 
 	let aix = document.querySelector('#aix');
@@ -69,14 +74,14 @@ function setup(){
 	let oauto = document.querySelector('#oplace');
 
 	aix.onclick = ()=>{
-		let pos = choose(2, 1);
+		let pos = choose(depth, 1);
 		if(place && pos){
 			board[toIndex(pos.x, pos.y)].state = 1;
 			display();
 		}
 	};
 	aio.onclick = ()=>{
-		let pos = choose(2, 2);
+		let pos = choose(depth, 2);
 		if(place && pos){
 			board[toIndex(pos.x, pos.y)].state = 2;
 			display();
@@ -88,6 +93,11 @@ function setup(){
 	oauto.onclick = (event)=>{
 		oplace = event.srcElement.checked;
 	};
+
+	a.checked = true;
+	oauto.checked = true;
+	alternate = a.checked;
+	oplace = oauto.checked;
 
 	readout = document.createElement('pre');
 	readout.style.paddingLeft = "20px";
@@ -179,15 +189,14 @@ function mousePressed(){
 		}
 		if(alternate){
 			if(xsel.checked){
-				osel.checked = true; playerSym = 2; let pos = choose(2, 2);
+				osel.checked = true; playerSym = 2; let pos = choose(depth, 2);
 				if(oplace &&pos){ 
 					board[toIndex(pos.x, pos.y)].state = 2;
 					xsel.checked = true; playerSym = 1;
-					del = true;
 				}
 
 			}
-			else if(osel.checked){xsel.checked = true; playerSym = 1; choose(2, 2);}
+			else if(osel.checked){xsel.checked = true; playerSym = 1; choose(depth, 1);}
 			
 		} 
 		//console.log(isTerminal(board));
