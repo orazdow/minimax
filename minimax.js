@@ -111,6 +111,7 @@ function choose(depth, player){
 		str += "("+m.x+", "+m.y+"): "+m.value+', '+m.depth+'\n';
 	});
 	str += 'best: ('+moves[index].x+', '+moves[index].y+')\n';
+	str += 'steps: '+steps+'\n';
 	readout.innerHTML = str;
 
 	return {x: moves[index].x, y: moves[index].y};
@@ -122,16 +123,18 @@ function evaluateMoves(maxdepth, player){
 	let maxiPlayer = player;
 	let miniPlayer = player == 1 ? 2 : 1;
 	let moves = [];
+	steps = 0;
 	spaces.forEach((pos, i)=>{
 		let child = childState(board, pos.x, pos.y, player);
-		let m = minimax(child, maxdepth, false, maxiPlayer, miniPlayer);
+		let m = minimax(child, maxdepth, false, maxiPlayer, miniPlayer, -99999, 99999);
 		moves.push({x: pos.x, y: pos.y, value: m.value, depth: maxdepth-m.depth});
 	});
 	return moves;
 }
 
-function minimax(state, depth, isMaximizing, maxiPlayer, miniPlayer){
+function minimax(state, depth, isMaximizing, maxiPlayer, miniPlayer, alpha, beta){
 	let t = isTerminal(state); 
+	steps++;
 	if(t){
 		if(t == 1){
 			return {value: 0, depth: depth}; // draw
@@ -147,19 +150,23 @@ function minimax(state, depth, isMaximizing, maxiPlayer, miniPlayer){
 
 	if(isMaximizing){ 
 		let value = -99999;
-		spaces.forEach((pos)=>{
-			let child = childState(state, pos.x, pos.y, maxiPlayer);
-			let m = minimax(child, depth, false, maxiPlayer, miniPlayer);
+		for(let i = 0; i < spaces.length; i++){
+			let child = childState(state, spaces[i].x, spaces[i].y, maxiPlayer);
+			let m = minimax(child, depth, false, maxiPlayer, miniPlayer, alpha, beta);
 			value = Math.max(value, m.value);
-		});
+			alpha = Math.max(alpha, value);
+			if(pruning && alpha >= beta)break;
+		}
 		return {value: value, depth: depth};
 	}else{
 		let value = 99999;
-		spaces.forEach((pos)=>{
-			let child = childState(state, pos.x, pos.y, miniPlayer);
-			let m = minimax(child, depth, true, maxiPlayer, miniPlayer);
+		for(let i = 0; i < spaces.length; i++){
+			let child = childState(state, spaces[i].x, spaces[i].y, miniPlayer);
+			let m = minimax(child, depth, true, maxiPlayer, miniPlayer, alpha, beta);
 			value = Math.min(value, m.value); 
-		});
+			beta = Math.min(beta, value);
+			if(pruning && alpha >= beta)break;
+		}
 		return {value: value, depth: depth};
 	}
 }

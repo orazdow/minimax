@@ -8,6 +8,8 @@ let depth = 2;
 let board = [];
 let alternate = false;
 let radio, xsel, osel, symsel, place, oplace, readout;
+let steps = 0;
+let pruning = false;
 
 // 0: empty  1: x  2: o
 
@@ -94,6 +96,12 @@ function setup(){
 		oplace = event.srcElement.checked;
 	};
 
+	let abpruning = document.querySelector('#abpruning');
+	abpruning.onclick = (event)=>{
+		pruning = event.srcElement.checked;
+	};
+	abpruning.checked = true;
+	pruning = true;
 	a.checked = true;
 	oauto.checked = true;
 	alternate = a.checked;
